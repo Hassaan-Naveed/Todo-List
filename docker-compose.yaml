@@ -2,13 +2,15 @@ services:
   db:
     image: postgres:17
     environment:
-      POSTGRES_DB: tododb
-      POSTGRES_USER: todouser
-      POSTGRES_PASSWORD: todopass
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:${DB_PORT}"
+    env_file:
+      - .env
 
   backend:
     build: ./backend
@@ -20,17 +22,22 @@ services:
     depends_on:
       - db
     environment:
-      - DB_NAME=tododb
-      - DB_USER=todouser
-      - DB_PASSWORD=todopass
-      - DB_HOST=db
-      - DB_PORT=5432
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+    env_file:
+      - .env
 
   frontend:
     build: ./frontend
+    working_dir: /app
     command: npm run dev
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app:cached
+    stdin_open: true
+    tty: true
     ports:
       - "3000:3000"
     depends_on:
